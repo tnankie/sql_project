@@ -67,7 +67,13 @@ SELECT *, MAX(joindate) FROM `Members`
 /* Q7: How can you produce a list of all members who have used a tennis court?
 Include in your output the name of the court, and the name of the member
 formatted as a single column. Ensure no duplicate data, and order by
-the member name. */ 
+the member name. */
+/*need to join all three tables, join Bookings and facilities on facid, join 
+members and bookings on memid. select name, surname + firstname, 
+sort but combined names. get uniques. */
+SELECT fname, msurname + mfirstname as mem_name
+FROM `Members`
+JOIN `Facilities` ON 
 
 
 /* Q8: How can you produce a list of bookings on the day of 2012-09-14 which
