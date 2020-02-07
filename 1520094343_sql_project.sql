@@ -94,7 +94,7 @@ FROM `Bookings` b
 JOIN `Facilities` f ON b.facid = f.facid
 JOIN `Members` m ON b.memid = m.memid
 WHERE b.starttime LIKE '2012-09-14%' 
-AND ((b.memid > 0 AND f.membercost > 30) OR (b.memid = 0 AND f.guestcost > 30))
+AND ((b.memid > 0 AND f.membercost * b.slots > 30) OR (b.memid = 0 AND f.guestcost * b.slots > 30))
 ORDER BY cost DESC
 -- actually working as intened now although I don't understand why I can't/how to use cost in the filter
 SELECT f.name, CONCAT (m.firstname, '', m.surname) as m_name,
@@ -118,8 +118,8 @@ The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
 SELECT name, total
 FROM (SELECT f.name,
-      CASE WHEN b.memid = 0 THEN f.guestcost
-         WHEN b.memid > 0 THEN f.membercost
+      CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
+         WHEN b.memid > 0 THEN f.membercost * b.slots
          ELSE 0 END AS revenue, sum(2) as total
       FROM `Bookings` b 
       JOIN `Facilities` f ON b.facid = f.facid
@@ -127,3 +127,29 @@ FROM (SELECT f.name,
       GROUP BY f.facid
       HAVING total < 1000) sub
 ORDER BY 2
+
+
+------
+SELECT name, total
+FROM (SELECT f.name,
+      SUM(CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
+         WHEN b.memid > 0 THEN f.membercost * b.slots
+         ELSE 0 END) AS total
+      FROM `Bookings` b 
+      JOIN `Facilities` f ON b.facid = f.facid
+      JOIN `Members` m ON b.memid = m.memid
+      GROUP BY f.facid
+      HAVING total < 1000) sub
+ORDER BY 2
+
+
+------------ not working for strange reasons
+SELECT f.name,
+      CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
+         WHEN b.memid > 0 THEN f.membercost * b.slots
+         ELSE 0 END AS revenue, sum(2) as total
+      FROM `Bookings` b 
+      JOIN `Facilities` f ON b.facid = f.facid
+      JOIN `Members` m ON b.memid = m.memid
+      GROUP BY f.facid
+      
