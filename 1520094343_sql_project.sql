@@ -30,7 +30,7 @@ SELECT name FROM `Facilities` WHERE membercost != 0
 Tennis Court 1, Tennis Court 2, Massage room 1, massage room 2, Squash court
 
 /* Q2: How many facilities do not charge a fee to members? */
-SELECT name FROM `Facilities` WHERE membercost = 0
+SELECT count(name) FROM `Facilities` WHERE membercost = 0
 4
 
 /* Q3: How can you produce a list of facilities that charge a fee to members,
@@ -53,10 +53,10 @@ SELECT * FROM `Facilities` WHERE facid IN (1,5)
 'cheap' or 'expensive', depending on if their monthly maintenance cost is
 more than $100? Return the name and monthly maintenance of the facilities
 in question. */
-SELECT 
+SELECT name, monthlymaintenance, 
     CASE WHEN monthlymaintenance > 100 THEN 'expensive'
-    ELSE 'cheap' END AS sumar,
-name, monthlymaintenance
+    ELSE 'cheap' END AS sumar
+
 FROM `Facilities`
 
 /* Q6: You'd like to get the first and last name of the last member(s)
@@ -71,11 +71,12 @@ the member name. */
 /*need to join all three tables, join Bookings and facilities on facid, join 
 members and bookings on memid. select name, surname + firstname, 
 sort but combined names. get uniques. */
-SELECT DISTINCT f.name CONCAT(m.surname, '', m.firstname) as  member_name
+SELECT DISTINCT f.name, CONCAT(m.surname, '', m.firstname) as  member_name
 FROM `Members` m
 JOIN `Bookings` b 
 on m.memid = b.memid JOIN `Facilities` f ON b.facid = f.facid
 WHERE f.facid in (0,1) AND b.memid > 0
+ORDER BY member_name
 --Includes bookings by same member on both courts 
 --(members who used both courts appear twice))
 
@@ -85,27 +86,27 @@ different costs to members (the listed costs are per half-hour 'slot'), and
 the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
-SELECT f.name, CONCAT (m.firstname, '', m.surname),
-CASE WHEN b.memid = 0 THEN f.guestcost
-     WHEN b.memid > 0 THEN f.membercost
+SELECT f.name, CONCAT (m.firstname, '', m.surname) as m_name,
+CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
+     WHEN b.memid > 0 THEN f.membercost * b.slots
      ELSE 0 END AS cost
 FROM `Bookings` b 
 JOIN `Facilities` f ON b.facid = f.facid
 JOIN `Members` m ON b.memid = m.memid
 WHERE b.starttime LIKE '2012-09-14%' 
 AND ((b.memid > 0 AND f.membercost > 30) OR (b.memid = 0 AND f.guestcost > 30))
-ORDER BY cost
+ORDER BY cost DESC
 -- actually working as intened now although I don't understand why I can't/how to use cost in the filter
-SELECT f.name, CONCAT (m.firstname, '', m.surname),
-CASE WHEN b.memid = 0 THEN f.guestcost
-     WHEN b.memid > 0 THEN f.membercost
+SELECT f.name, CONCAT (m.firstname, '', m.surname) as m_name,
+CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
+     WHEN b.memid > 0 THEN f.membercost * b.slots
      ELSE 0 END AS cost
 FROM `Bookings` b 
 JOIN `Facilities` f ON b.facid = f.facid
 JOIN `Members` m ON b.memid = m.memid
 WHERE b.starttime LIKE '2012-09-14%' 
 HAVING cost > 30
-ORDER BY cost
+ORDER BY cost DESC
 -- there we go
 
 
