@@ -85,11 +85,17 @@ different costs to members (the listed costs are per half-hour 'slot'), and
 the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
-SELECT * 
+SELECT f.name, CONCAT (m.firstname, '', m.surname),
+CASE WHEN b.memid = 0 THEN f.guestcost
+     WHEN b.memid > 0 THEN f.membercost
+     ELSE 0 END AS cost
 FROM `Bookings` b 
 JOIN `Facilities` f ON b.facid = f.facid
+JOIN `Members` m ON b.memid = m.memid
 WHERE b.starttime LIKE '2012-09-14%' 
 AND ((b.memid > 0 AND f.membercost > 30) OR (b.memid = 0 AND f.guestcost > 30))
+ORDER BY cost
+-- actually working as intened now
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
