@@ -88,7 +88,8 @@ Order by descending cost, and do not use any subqueries. */
 SELECT * 
 FROM `Bookings` b 
 JOIN `Facilities` f ON b.facid = f.facid
-WHERE b.starttime LIKE '2012-09-14%'
+WHERE b.starttime LIKE '2012-09-14%' 
+AND ((b.memid > 0 AND f.membercost > 30) OR (b.memid = 0 AND f.guestcost > 30))
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
