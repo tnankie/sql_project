@@ -95,11 +95,31 @@ JOIN `Members` m ON b.memid = m.memid
 WHERE b.starttime LIKE '2012-09-14%' 
 AND ((b.memid > 0 AND f.membercost > 30) OR (b.memid = 0 AND f.guestcost > 30))
 ORDER BY cost
--- actually working as intened now
-
+-- actually working as intened now although I don't understand why I can't/how to use cost in the filter
+SELECT f.name, CONCAT (m.firstname, '', m.surname),
+CASE WHEN b.memid = 0 THEN f.guestcost
+     WHEN b.memid > 0 THEN f.membercost
+     ELSE 0 END AS cost
+FROM `Bookings` b 
+JOIN `Facilities` f ON b.facid = f.facid
+JOIN `Members` m ON b.memid = m.memid
+WHERE b.starttime LIKE '2012-09-14%' 
+HAVING cost > 30
+ORDER BY cost
+-- there we go
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
-
+-- nfi
 
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
 The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
+SELECT f.name,
+CASE WHEN b.memid = 0 THEN f.guestcost
+     WHEN b.memid > 0 THEN f.membercost
+     ELSE 0 END AS revenue, sum(2) as total
+FROM `Bookings` b 
+JOIN `Facilities` f ON b.facid = f.facid
+JOIN `Members` m ON b.memid = m.memid
+GROUP BY f.facid
+HAVING total < 1000
+ORDER BY 3
