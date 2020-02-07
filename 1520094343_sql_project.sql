@@ -71,10 +71,13 @@ the member name. */
 /*need to join all three tables, join Bookings and facilities on facid, join 
 members and bookings on memid. select name, surname + firstname, 
 sort but combined names. get uniques. */
-SELECT fname, msurname + mfirstname as mem_name
-FROM `Members`
-JOIN `Facilities` ON 
-
+SELECT DISTINCT f.name CONCAT(m.surname, '', m.firstname) as  member_name
+FROM `Members` m
+JOIN `Bookings` b 
+on m.memid = b.memid JOIN `Facilities` f ON b.facid = f.facid
+WHERE f.facid in (0,1) AND b.memid > 0
+--Includes bookings by same member on both courts 
+--(members who used both courts appear twice))
 
 /* Q8: How can you produce a list of bookings on the day of 2012-09-14 which
 will cost the member (or guest) more than $30? Remember that guests have
@@ -82,7 +85,10 @@ different costs to members (the listed costs are per half-hour 'slot'), and
 the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
-
+SELECT * 
+FROM `Bookings` b 
+JOIN `Facilities` f ON b.facid = f.facid
+WHERE b.starttime LIKE '2012-09-14%'
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
