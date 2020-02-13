@@ -61,8 +61,7 @@ FROM `Facilities`
 
 /* Q6: You'd like to get the first and last name of the last member(s)
 who signed up. Do not use the LIMIT clause for your solution. */
-SELECT firstname, surname FROM `Members` ORDER BY joindate DESC
-SELECT *, MAX(joindate) FROM `Members` 
+SELECT firstname, surname, MAX(joindate) FROM `Members` WHERE memid != 0
 
 /* Q7: How can you produce a list of all members who have used a tennis court?
 Include in your output the name of the court, and the name of the member
@@ -111,25 +110,22 @@ ORDER BY cost DESC
 
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
--- nfi
+SELECT subq.name, subq.cost, CONCAT (m.firstname, ' ', m.surname) as member
+FROM (SELECT b.memid, f.name,
+        CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
+             WHEN b.memid > 0 THEN f.membercost * b.slots
+             ELSE 0 END AS cost
+    FROM `Bookings` b
+    JOIN `Facilities` f ON b.facid = f.facid
+    WHERE b.starttime LIKE '2012-09-14%') subq
+JOIN `Members` m ON subq.memid = m.memid
+WHERE subq.cost > 30
+ORDER BY cost DESC 
 
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
 The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
-SELECT name, total
-FROM (SELECT f.name,
-      CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
-         WHEN b.memid > 0 THEN f.membercost * b.slots
-         ELSE 0 END AS revenue, sum(2) as total
-      FROM `Bookings` b 
-      JOIN `Facilities` f ON b.facid = f.facid
-      JOIN `Members` m ON b.memid = m.memid
-      GROUP BY f.facid
-      HAVING total < 1000) sub
-ORDER BY 2
 
-
-------
 SELECT name, total
 FROM (SELECT f.name,
       SUM(CASE WHEN b.memid = 0 THEN f.guestcost * b.slots
@@ -152,4 +148,6 @@ SELECT f.name,
       JOIN `Facilities` f ON b.facid = f.facid
       JOIN `Members` m ON b.memid = m.memid
       GROUP BY f.facid
-      
+ 
+ 
+ ------------------------------------
